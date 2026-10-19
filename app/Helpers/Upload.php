@@ -27,14 +27,22 @@ class Upload {
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = uniqid('img_', true) . '.' . strtolower($extension);
 
-        // Upload directory
-        $destinationDir = __DIR__ . '/../../public/uploads/' . trim($targetFolder, '/');
+        // Upload directory: detect if running in read-only serverless environment like Vercel
+        $baseUploadDir = __DIR__ . '/../../public/uploads';
+        $isServerless = (getenv('VERCEL') || isset($_SERVER['VERCEL']) || !is_writable(__DIR__ . '/../../'));
+
+        if ($isServerless) {
+            $destinationDir = '/tmp/uploads/' . trim($targetFolder, '/');
+        } else {
+            $destinationDir = $baseUploadDir . '/' . trim($targetFolder, '/');
+        }
+
         if (!is_dir($destinationDir)) {
-            mkdir($destinationDir, 0755, true);
+            @mkdir($destinationDir, 0755, true);
         }
 
         $targetPath = $destinationDir . '/' . $filename;
-        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        if (!@move_uploaded_file($file['tmp_name'], $targetPath)) {
             return ['success' => false, 'error' => 'មិនអាចរក្សាទុករូបភាពនៅលើ Server បានទេ'];
         }
 
@@ -85,13 +93,22 @@ class Upload {
 
         $filename = uniqid('vid_', true) . '.' . $extension;
 
-        $destinationDir = __DIR__ . '/../../public/uploads/videos';
+        // Video Upload directory
+        $baseUploadDir = __DIR__ . '/../../public/uploads/videos';
+        $isServerless = (getenv('VERCEL') || isset($_SERVER['VERCEL']) || !is_writable(__DIR__ . '/../../'));
+
+        if ($isServerless) {
+            $destinationDir = '/tmp/uploads/videos';
+        } else {
+            $destinationDir = $baseUploadDir;
+        }
+
         if (!is_dir($destinationDir)) {
-            mkdir($destinationDir, 0755, true);
+            @mkdir($destinationDir, 0755, true);
         }
 
         $targetPath = $destinationDir . '/' . $filename;
-        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        if (!@move_uploaded_file($file['tmp_name'], $targetPath)) {
             return ['success' => false, 'error' => 'មិនអាចរក្សាទុកវីដេអូនោះនៅលើ Server បានទេ'];
         }
 

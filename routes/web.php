@@ -32,6 +32,29 @@ use App\Middleware\AdminMiddleware;
 // PUBLIC ROUTES
 // -------------------------------------------------------------
 $router->get('/', [HomeController::class, 'index']);
+
+// Dynamic Serverless Upload File Streaming
+$router->get('/uploads/{folder}/{file}', function ($folder, $file) {
+    $safeFolder = preg_replace('/[^a-zA-Z0-9_-]/', '', $folder);
+    $safeFile = preg_replace('/[^a-zA-Z0-9_.-]/', '', $file);
+
+    $publicPath = __DIR__ . '/../public/uploads/' . $safeFolder . '/' . $safeFile;
+    $tmpPath = '/tmp/uploads/' . $safeFolder . '/' . $safeFile;
+
+    $path = file_exists($publicPath) ? $publicPath : (file_exists($tmpPath) ? $tmpPath : null);
+
+    if (!$path) {
+        http_response_code(404);
+        die('File not found');
+    }
+
+    $mime = mime_content_type($path) ?: 'application/octet-stream';
+    header('Content-Type: ' . $mime);
+    header('Content-Length: ' . filesize($path));
+    readfile($path);
+    exit;
+});
+
 $router->get('/courses', [CourseController::class, 'index']);
 $router->get('/course/{slug}', [CourseController::class, 'show']);
 $router->post('/course/{id}/wishlist', [CourseController::class, 'toggleWishlist']);
