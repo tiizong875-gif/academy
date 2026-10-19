@@ -12,12 +12,7 @@
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/public/uploads/$1",
-      "check": true
-    },
-    {
-      "src": "/uploads/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/public/uploads/$1"
     },
     {
       "src": "/(.*)",
