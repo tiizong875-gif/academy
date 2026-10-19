@@ -79,10 +79,16 @@ if (!function_exists('uploadUrl')) {
             return $default ? asset($default) : asset('images/placeholder-course.jpg');
         }
 
-        $cleanPath = ltrim($path, '/');
-        if (!str_starts_with($cleanPath, 'uploads/')) {
-            $cleanPath = 'uploads/' . $cleanPath;
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
         }
+
+        $cleanPath = ltrim($path, '/');
+        if (str_starts_with($cleanPath, 'uploads/')) {
+            $cleanPath = substr($cleanPath, 8);
+        }
+        $cleanPath = preg_replace('#^(thumbnails|qr|receipts|profiles|videos)/\1/#', '$1/', $cleanPath);
+        $cleanPath = 'uploads/' . $cleanPath;
 
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $scriptDir = rtrim($scriptDir, '/');

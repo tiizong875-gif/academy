@@ -236,7 +236,7 @@ use App\Helpers\Auth;
             <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top bg-white" style="top: 90px;">
                 <!-- Video Preview / Thumbnail -->
                 <div class="position-relative rounded-3 overflow-hidden mb-3">
-                    <img src="<?= uploadUrl('thumbnails/' . $course['thumbnail']) ?>" alt="Course" class="img-fluid w-100">
+                    <img src="<?= uploadUrl('thumbnails/' . $course['thumbnail']) ?>" alt="Course" class="img-fluid w-100" onerror="this.onerror=null;this.src='<?= asset('images/placeholder-course.jpg') ?>'">
                     <?php if (!empty($course['video_preview_url'])): ?>
                         <div class="position-absolute top-50 start-50 translate-middle">
                             <a href="<?= e($course['video_preview_url']) ?>" target="_blank" class="btn btn-danger rounded-circle p-3 shadow-lg">

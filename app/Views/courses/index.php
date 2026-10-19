@@ -109,7 +109,7 @@ use App\Helpers\Str;
                         <div class="col-md-6 col-xl-4">
                             <div class="course-card">
                                 <div class="course-thumbnail-wrapper">
-                                    <img src="<?= uploadUrl('thumbnails/' . $course['thumbnail']) ?>" alt="<?= e($course['title']) ?>" class="course-thumbnail">
+                                    <img src="<?= uploadUrl('thumbnails/' . $course['thumbnail']) ?>" alt="<?= e($course['title']) ?>" class="course-thumbnail" onerror="this.onerror=null;this.src='<?= asset('images/placeholder-course.jpg') ?>'">
                                     <div class="course-badge-overlay">
                                         <?php if ($course['is_free']): ?>
                                             <span class="badge-tag badge-free">ឥតគិតថ្លៃ (Free)</span>
