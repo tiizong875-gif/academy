@@ -52,23 +52,24 @@ if (!function_exists('url')) {
 
 if (!function_exists('asset')) {
     function asset(string $path): string {
-        $reqUri = $_SERVER['REQUEST_URI'] ?? '/';
+        $cleanPath = ltrim($path, '/');
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $scriptDir = rtrim($scriptDir, '/');
-        $cleanPath = ltrim($path, '/');
 
-        // If running where document root is already public/ (e.g. Vercel, production hosting)
-        if (file_exists(__DIR__ . '/../../public/assets/' . $cleanPath) && basename($_SERVER['DOCUMENT_ROOT'] ?? '') === 'public') {
+        // On Vercel or Production (detected via VERCEL env or root execution /api)
+        if (getenv('VERCEL') || isset($_SERVER['VERCEL']) || str_starts_with($_SERVER['SCRIPT_NAME'] ?? '', '/api')) {
             return '/assets/' . $cleanPath;
         }
 
-        // If user is accessing directly via /public
-        if (str_contains($reqUri, '/public') || str_ends_with($scriptDir, '/public')) {
-            $publicDir = str_ends_with($scriptDir, '/public') ? $scriptDir : $scriptDir . '/public';
-            return $publicDir . '/assets/' . $cleanPath;
+        // Local XAMPP with subfolder (e.g. /academy)
+        if ($scriptDir !== '' && $scriptDir !== '.' && $scriptDir !== '/') {
+            if (str_ends_with($scriptDir, '/public')) {
+                return $scriptDir . '/assets/' . $cleanPath;
+            }
+            return $scriptDir . '/public/assets/' . $cleanPath;
         }
 
-        return ($scriptDir === '' || $scriptDir === '.' ? '' : $scriptDir) . '/public/assets/' . $cleanPath;
+        return '/public/assets/' . $cleanPath;
     }
 }
 
@@ -79,29 +80,27 @@ if (!function_exists('uploadUrl')) {
         }
 
         $cleanPath = ltrim($path, '/');
-
-        // Automatically prepend 'uploads/' if not already included
         if (!str_starts_with($cleanPath, 'uploads/')) {
             $cleanPath = 'uploads/' . $cleanPath;
         }
 
-        $reqUri = $_SERVER['REQUEST_URI'] ?? '/';
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $scriptDir = rtrim($scriptDir, '/');
 
-        // If document root is public/
-        if (basename($_SERVER['DOCUMENT_ROOT'] ?? '') === 'public') {
+        // On Vercel or Production
+        if (getenv('VERCEL') || isset($_SERVER['VERCEL']) || str_starts_with($_SERVER['SCRIPT_NAME'] ?? '', '/api')) {
             return '/' . $cleanPath;
         }
 
-        // If user is accessing directly via /public
-        if (str_contains($reqUri, '/public') || str_ends_with($scriptDir, '/public')) {
-            $publicDir = str_ends_with($scriptDir, '/public') ? $scriptDir : $scriptDir . '/public';
-            return $publicDir . '/' . $cleanPath;
+        // Local XAMPP with subfolder
+        if ($scriptDir !== '' && $scriptDir !== '.' && $scriptDir !== '/') {
+            if (str_ends_with($scriptDir, '/public')) {
+                return $scriptDir . '/' . $cleanPath;
+            }
+            return $scriptDir . '/' . $cleanPath;
         }
 
-        // Standard clean rewrite URL
-        return ($scriptDir === '' || $scriptDir === '.' ? '' : $scriptDir) . '/' . $cleanPath;
+        return '/' . $cleanPath;
     }
 }
 
