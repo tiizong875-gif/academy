@@ -5,11 +5,11 @@
  */
 
 return [
-    'host'      => getenv('DB_HOST') ?: '127.0.0.1',
-    'port'      => getenv('DB_PORT') ?: '3306',
-    'database'  => getenv('DB_NAME') ?: 'katteb_academy',
-    'username'  => getenv('DB_USER') ?: 'root',
-    'password'  => getenv('DB_PASS') !== false ? getenv('DB_PASS') : '',
+    'host'      => $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? getenv('DB_HOST') ?: '127.0.0.1',
+    'port'      => $_ENV['DB_PORT'] ?? $_SERVER['DB_PORT'] ?? getenv('DB_PORT') ?: '3306',
+    'database'  => $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? getenv('DB_NAME') ?: 'katteb_academy',
+    'username'  => $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? getenv('DB_USER') ?: 'root',
+    'password'  => $_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? (getenv('DB_PASS') !== false ? getenv('DB_PASS') : ''),
     'charset'   => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
     'options'   => [
