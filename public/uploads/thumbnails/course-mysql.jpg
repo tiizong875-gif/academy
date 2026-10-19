@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+      <defs>
+        <linearGradient id="bg_33c1d3cbfc796da1e4ea477d4a56a4a2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1E293B"/>
+          <stop offset="100%" stop-color="#334155"/>
+        </linearGradient>
+      </defs>
+      <rect width="800" height="450" fill="url(#bg_33c1d3cbfc796da1e4ea477d4a56a4a2)"/>
+      <circle cx="700" cy="80" r="160" fill="rgba(255,255,255,0.05)"/>
+      <circle cx="100" cy="380" r="120" fill="rgba(34,197,94,0.15)"/>
+      <rect x="60" y="50" width="130" height="34" rx="6" fill="rgba(34,197,94,0.2)" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="125" y="73" fill="#22C55E" font-family="system-ui, sans-serif" font-weight="bold" font-size="13" text-anchor="middle">KATTEB CODE</text>
+      <text x="60" y="190" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="bold" font-size="28">MySQL Database Optimization</text>
+      <text x="60" y="240" fill="#CBD5E1" font-family="system-ui, sans-serif" font-size="18">Data Modeling, Indexing &amp; High Performance</text>
+      <rect x="60" y="320" width="160" height="44" rx="8" fill="#22C55E"/>
+      <text x="140" y="348" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="bold" font-size="15" text-anchor="middle">ចូលរៀន &gt;</text>
+    </svg>

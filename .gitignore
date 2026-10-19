@@ -1,0 +1,16 @@
+.env
+storage/logs/*.log
+storage/uploads/receipts/*
+!storage/uploads/receipts/.gitkeep
+storage/uploads/profiles/*
+!storage/uploads/profiles/.gitkeep
+storage/uploads/thumbnails/*
+!storage/uploads/thumbnails/.gitkeep
+storage/uploads/qr/*
+!storage/uploads/qr/.gitkeep
+storage/private-videos/*
+!storage/private-videos/.gitkeep
+.vscode/
+.idea/
+.vercel
+*.log
