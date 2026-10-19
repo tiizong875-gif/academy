@@ -48,9 +48,26 @@ $router->get('/uploads/{folder}/{file}', function ($folder, $file) {
         die('File not found');
     }
 
-    $mime = mime_content_type($path) ?: 'application/octet-stream';
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $mimes = [
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'gif'  => 'image/gif',
+        'webp' => 'image/webp',
+        'svg'  => 'image/svg+xml',
+        'mp4'  => 'video/mp4',
+        'webm' => 'video/webm'
+    ];
+    $mime = $mimes[$ext] ?? (function_exists('mime_content_type') ? @mime_content_type($path) : 'application/octet-stream');
+
+    if (ob_get_level()) {
+        ob_end_clean();
+    }
+
     header('Content-Type: ' . $mime);
     header('Content-Length: ' . filesize($path));
+    header('Cache-Control: public, max-age=86400');
     readfile($path);
     exit;
 });
