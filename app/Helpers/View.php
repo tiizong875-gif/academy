@@ -30,6 +30,14 @@ if (!function_exists('view')) {
 
 if (!function_exists('url')) {
     function url(string $path = ''): string {
+        $cleanPath = ltrim($path, '/');
+
+        // On Vercel or Root Domain deployments
+        $isVercel = (getenv('VERCEL') || isset($_SERVER['VERCEL']) || str_ends_with($_SERVER['HTTP_HOST'] ?? '', '.vercel.app'));
+        if ($isVercel) {
+            return $cleanPath === '' ? '/' : '/' . $cleanPath;
+        }
+
         $reqUri = $_SERVER['REQUEST_URI'] ?? '/';
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $scriptDir = rtrim($scriptDir, '/');

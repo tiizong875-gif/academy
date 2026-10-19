@@ -32,6 +32,13 @@ class Request {
     public function uri(): string {
         $uri = $this->server['REQUEST_URI'] ?? '/';
         $path = parse_url($uri, PHP_URL_PATH);
+
+        // On Vercel or Root Domain deployments, the root is always /
+        $isVercel = (getenv('VERCEL') || isset($this->server['VERCEL']) || str_ends_with($this->server['HTTP_HOST'] ?? '', '.vercel.app'));
+        if ($isVercel) {
+            $path = '/' . trim($path, '/');
+            return ($path === '' || $path === '//') ? '/' : $path;
+        }
         
         $scriptName = str_replace('\\', '/', $this->server['SCRIPT_NAME'] ?? '');
         $dir = str_replace('\\', '/', dirname($scriptName));
