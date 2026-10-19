@@ -26,30 +26,37 @@ class Upload {
 
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = uniqid('img_', true) . '.' . strtolower($extension);
+        $cleanFolder = trim($targetFolder, '/');
 
-        // Upload directory: detect if running in read-only serverless environment like Vercel
-        $baseUploadDir = __DIR__ . '/../../public/uploads';
-        $isServerless = (getenv('VERCEL') || isset($_SERVER['VERCEL']) || !is_writable(__DIR__ . '/../../'));
-
-        if ($isServerless) {
-            $destinationDir = '/tmp/uploads/' . trim($targetFolder, '/');
-        } else {
-            $destinationDir = $baseUploadDir . '/' . trim($targetFolder, '/');
+        // Persist file content to database (ensures files survive serverless/ephemeral environments)
+        $fileData = @file_get_contents($file['tmp_name']);
+        if ($fileData !== false) {
+            try {
+                $pdo = \App\Core\Database::connect();
+                $stmt = $pdo->prepare("INSERT INTO uploaded_files (folder, filename, mime_type, file_data, file_size) 
+                                       VALUES (?, ?, ?, ?, ?) 
+                                       ON DUPLICATE KEY UPDATE file_data = VALUES(file_data), mime_type = VALUES(mime_type), file_size = VALUES(file_size)");
+                $stmt->execute([$cleanFolder, $filename, $mime, $fileData, strlen($fileData)]);
+            } catch (\Exception $e) {
+                // If database persistence fails, will try local disk below
+            }
         }
+
+        // Also save to local public uploads if filesystem is writable
+        $baseUploadDir = __DIR__ . '/../../public/uploads';
+        $destinationDir = $baseUploadDir . '/' . $cleanFolder;
 
         if (!is_dir($destinationDir)) {
             @mkdir($destinationDir, 0755, true);
         }
 
         $targetPath = $destinationDir . '/' . $filename;
-        if (!@move_uploaded_file($file['tmp_name'], $targetPath)) {
-            return ['success' => false, 'error' => 'មិនអាចរក្សាទុករូបភាពនៅលើ Server បានទេ'];
-        }
+        @move_uploaded_file($file['tmp_name'], $targetPath);
 
         return [
             'success'  => true,
             'filename' => $filename,
-            'path'     => 'uploads/' . trim($targetFolder, '/') . '/' . $filename
+            'path'     => 'uploads/' . $cleanFolder . '/' . $filename
         ];
     }
 

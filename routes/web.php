@@ -33,22 +33,11 @@ use App\Middleware\AdminMiddleware;
 // -------------------------------------------------------------
 $router->get('/', [HomeController::class, 'index']);
 
-// Dynamic Serverless Upload File Streaming
+// Dynamic Upload File Streaming (from Disk, Database or Fallback)
 $router->get('/uploads/{folder}/{file}', function ($folder, $file) {
     $safeFolder = preg_replace('/[^a-zA-Z0-9_-]/', '', $folder);
     $safeFile = preg_replace('/[^a-zA-Z0-9_.-]/', '', $file);
 
-    $publicPath = __DIR__ . '/../public/uploads/' . $safeFolder . '/' . $safeFile;
-    $tmpPath = '/tmp/uploads/' . $safeFolder . '/' . $safeFile;
-
-    $path = file_exists($publicPath) ? $publicPath : (file_exists($tmpPath) ? $tmpPath : null);
-
-    if (!$path) {
-        http_response_code(404);
-        die('File not found');
-    }
-
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
     $mimes = [
         'jpg'  => 'image/jpeg',
         'jpeg' => 'image/jpeg',
@@ -59,17 +48,54 @@ $router->get('/uploads/{folder}/{file}', function ($folder, $file) {
         'mp4'  => 'video/mp4',
         'webm' => 'video/webm'
     ];
-    $mime = $mimes[$ext] ?? (function_exists('mime_content_type') ? @mime_content_type($path) : 'application/octet-stream');
 
-    if (ob_get_level()) {
-        ob_end_clean();
+    // 1. Check local public disk
+    $publicPath = __DIR__ . '/../public/uploads/' . $safeFolder . '/' . $safeFile;
+    if (file_exists($publicPath)) {
+        if (ob_get_level()) ob_end_clean();
+        $ext = strtolower(pathinfo($publicPath, PATHINFO_EXTENSION));
+        $mime = $mimes[$ext] ?? 'application/octet-stream';
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($publicPath));
+        header('Cache-Control: public, max-age=86400');
+        readfile($publicPath);
+        exit;
     }
 
-    header('Content-Type: ' . $mime);
-    header('Content-Length: ' . filesize($path));
-    header('Cache-Control: public, max-age=86400');
-    readfile($path);
-    exit;
+    // 2. Check Database uploaded_files table
+    try {
+        $pdo = \App\Core\Database::connect();
+        $stmt = $pdo->prepare("SELECT mime_type, file_data, file_size FROM uploaded_files WHERE folder = ? AND filename = ? LIMIT 1");
+        $stmt->execute([$safeFolder, $safeFile]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($row && !empty($row['file_data'])) {
+            if (ob_get_level()) ob_end_clean();
+            header('Content-Type: ' . $row['mime_type']);
+            header('Content-Length: ' . ($row['file_size'] ?: strlen($row['file_data'])));
+            header('Cache-Control: public, max-age=86400');
+            echo $row['file_data'];
+            exit;
+        }
+    } catch (\Exception $e) {
+        // Fallback to placeholder below
+    }
+
+    // 3. Fallback: If it's a thumbnail, serve default placeholder
+    if ($safeFolder === 'thumbnails') {
+        $placeholder = __DIR__ . '/../public/assets/images/placeholder-course.jpg';
+        if (file_exists($placeholder)) {
+            if (ob_get_level()) ob_end_clean();
+            header('Content-Type: image/jpeg');
+            header('Content-Length: ' . filesize($placeholder));
+            header('Cache-Control: public, max-age=86400');
+            readfile($placeholder);
+            exit;
+        }
+    }
+
+    http_response_code(404);
+    die('File not found');
 });
 
 $router->get('/courses', [CourseController::class, 'index']);

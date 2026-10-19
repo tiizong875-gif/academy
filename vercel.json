@@ -12,7 +12,7 @@
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/public/uploads/$1"
+      "dest": "/api/index.php"
     },
     {
       "src": "/(.*)",
